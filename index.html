@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1, user-scalable=no">
 <title>Journal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,57 +23,65 @@
   --font-display: 'Shrikhand', cursive;
   --font-stamp:   'Special Elite', system-ui;
   --font-mono:    'VT323', monospace;
+  --app-bg:       #fdfaf0;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-html, body {
+html {
   width: 100%;
   height: 100%;
+  overflow: hidden;
 }
 
 body {
-  background-color: #f4f1e6;
-  min-height: 100vh;
-  min-height: -webkit-fill-available;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
+  background: var(--app-bg);
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
 }
 
+/* FIX #1: Full screen coverage using fixed positioning */
 .iphone-frame {
-  width: 100vw;
-  height: 100vh;
-  height: -webkit-fill-available;
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-  background: #fdfaf0;
-  position: relative;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--app-bg);
   overflow: hidden;
 }
 
-.notch {
-  display: none;
-}
+.notch { display: none; }
 
 /* ══════════════════════════════════
-   PAGE SYSTEM
+   PAGE SYSTEM — FIX #4: No stamp-enter, pure CSS transitions only
 ══════════════════════════════════ */
 .page {
   position: absolute;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  transition: transform 0.5s cubic-bezier(0.77,0,0.18,1), opacity 0.35s ease;
+  /* FIX #4: Use single transition — no animation class at all */
+  transition: transform 0.45s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.3s ease;
+  will-change: transform, opacity;
 }
-/* hidden state — pushed down */
+
+/* hidden: off-screen below */
 .page.slide-up {
   transform: translateY(100%);
   pointer-events: none;
 }
-/* hidden state — pushed up (home slides away) */
+
+/* hidden: pushed up & faded */
 .page.slide-out {
-  transform: translateY(-100%);
+  transform: translateY(-12%);
   opacity: 0;
   pointer-events: none;
 }
+
+/* FIX #4: Active state is simply no transform class — default position */
+/* No .stamp-enter animation at all; pages simply transition in */
 
 /* stacking order */
 #home   { z-index: 1; }
@@ -89,12 +97,13 @@ body {
   height: 100%;
   overflow: hidden;
   padding: 60px 24px 40px;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 40px);
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-/* Title */
 h1.home-title {
   font-family: var(--font-display);
   font-size: 3.8rem;
@@ -108,7 +117,6 @@ h1.home-title {
   flex-shrink: 0;
 }
 
-/* Hero sticker area */
 .hero-sticker-area {
   position: relative;
   width: 100%;
@@ -126,7 +134,6 @@ h1.home-title {
   transform-style: preserve-3d;
 }
 
-/* Decorative stickers */
 .deco-sticker {
   position: absolute;
   z-index: 6;
@@ -170,7 +177,6 @@ h1.home-title {
   z-index: 6;
 }
 
-/* Copy text */
 .copy {
   font-family: var(--font-stamp);
   font-size: 1rem;
@@ -181,7 +187,6 @@ h1.home-title {
   flex-shrink: 0;
 }
 
-/* Stamp button */
 .btn-stamp {
   display: block;
   width: 100%;
@@ -202,7 +207,6 @@ h1.home-title {
   box-shadow: inset 0 0 10px rgba(139,0,0,0.1);
   cursor: pointer;
   transition: background 0.15s, color 0.15s, transform 0.1s;
-  -webkit-tap-highlight-color: transparent;
   user-select: none;
   letter-spacing: 0.05em;
   flex-shrink: 0;
@@ -214,7 +218,7 @@ h1.home-title {
 }
 
 /* ══════════════════════════════════
-   3-D COMPUTER (exact Variant port)
+   3-D COMPUTER
 ══════════════════════════════════ */
 .computer-unit {
   position: relative;
@@ -248,7 +252,6 @@ h1.home-title {
   box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
 }
 
-/* CRT scanline overlay */
 .crt::before {
   content: '';
   position: absolute; top:0;left:0;right:0;bottom:0;
@@ -277,9 +280,7 @@ h1.home-title {
   letter-spacing: 0.05em;
 }
 
-.crt-content {
-  font-size: 12px; line-height: 1.3;
-}
+.crt-content { font-size: 12px; line-height: 1.3; }
 
 .crt-cursor {
   display: inline-block;
@@ -290,6 +291,17 @@ h1.home-title {
   margin-left: 2px;
 }
 
+.crt-click-hint {
+  position: absolute;
+  bottom: 10px; right: 12px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 0.06em;
+  pointer-events: none;
+  z-index: 3;
+}
+
 .floppy-slot {
   width: 140px; height: 10px;
   background: #333; margin-top: 30px;
@@ -297,7 +309,6 @@ h1.home-title {
   box-shadow: inset 1px 1px 3px rgba(0,0,0,0.5);
 }
 
-/* Computer stickers */
 .comp-sticker { position: absolute; z-index: 5; }
 .comp-sticker-ball {
   width: 40px; height: 40px;
@@ -364,7 +375,6 @@ h1.home-title {
   box-shadow: inset 10px 0 20px rgba(0,0,0,0.05);
 }
 
-/* Keyboard */
 .keyboard-assembly {
   position: absolute; width: 360px; height: 140px; bottom: -110px;
   transform: translateZ(160px) rotateX(65deg);
@@ -411,7 +421,7 @@ h1.home-title {
    EDIT PAGE
 ══════════════════════════════════ */
 #edit {
-  background: #fdfaf0;
+  background: var(--app-bg);
   background-image: radial-gradient(circle at 2px 2px, rgba(0,0,0,0.03) 1px, transparent 0);
   background-size: 24px 24px;
   display: flex;
@@ -430,12 +440,11 @@ h1.home-title {
 }
 #edit .scroll-container::-webkit-scrollbar { display: none; }
 
-/* Edit top bar */
 .edit-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 48px 20px 16px;
+  padding: calc(env(safe-area-inset-top, 0px) + 12px) 20px 16px;
   border-bottom: 2px solid rgba(139,0,0,0.15);
   flex-shrink: 0;
 }
@@ -466,7 +475,7 @@ h1.home-title {
   font-family: var(--font-stamp);
   font-size: 1rem;
   background: var(--accent-red);
-  color: #fdfaf0;
+  color: var(--app-bg);
   border: 2px solid var(--accent-red);
   padding: 6px 14px;
   cursor: pointer;
@@ -477,7 +486,6 @@ h1.home-title {
 }
 .save-stamp:active { opacity: 0.7; }
 
-/* Entry area */
 .entry-wrap { padding: 0 20px; flex: 1; display: flex; flex-direction: column; }
 
 .entry-title-input {
@@ -494,7 +502,6 @@ h1.home-title {
 }
 .entry-title-input::placeholder { color: rgba(139,0,0,0.2); }
 
-/* Stamp divider */
 .stamp-line {
   width: 100%;
   border: none;
@@ -502,6 +509,7 @@ h1.home-title {
   margin: 4px 0 12px;
 }
 
+/* FIX #2: Rich editor area replaces plain textarea */
 .entry-body-input {
   font-family: var(--font-stamp);
   font-size: 1rem;
@@ -516,15 +524,45 @@ h1.home-title {
 }
 .entry-body-input::placeholder { color: rgba(0,0,0,0.18); }
 
-/* Footer */
+/* Rich editor contenteditable */
+.rich-editor {
+  font-family: var(--font-stamp);
+  font-size: 1rem;
+  line-height: 1.9;
+  color: #333;
+  background: transparent;
+  border: none; outline: none;
+  width: 100%;
+  min-height: 320px;
+  -webkit-appearance: none;
+  word-break: break-word;
+  white-space: pre-wrap;
+  padding: 0;
+}
+.rich-editor:empty::before {
+  content: attr(data-placeholder);
+  color: rgba(0,0,0,0.18);
+  pointer-events: none;
+}
+.rich-editor img {
+  display: block;
+  max-width: 100%;
+  border-radius: 6px;
+  margin: 8px 0;
+  border: 1px solid rgba(139,0,0,0.12);
+}
+.rich-editor:focus {
+  outline: none;
+}
+
 .edit-footer {
-  padding: 14px 20px calc(14px + env(safe-area-inset-bottom));
+  padding: 14px 20px calc(14px + env(safe-area-inset-bottom, 0px));
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-top: 2px solid rgba(139,0,0,0.12);
   flex-shrink: 0;
-  background: #fdfaf0;
+  background: var(--app-bg);
 }
 .word-stamp {
   font-family: var(--font-mono);
@@ -540,9 +578,7 @@ h1.home-title {
 }
 .foot-icons button:active { color: var(--accent-red); }
 
-/* ══════════════════════════════════
-   PHOTO STRIP
-══════════════════════════════════ */
+/* Photo strip (thumbnails below editor) */
 .photo-strip {
   display: flex;
   flex-wrap: wrap;
@@ -572,7 +608,7 @@ h1.home-title {
   width: 20px; height: 20px;
   background: var(--accent-red);
   color: #fff;
-  border: 2px solid #fdfaf0;
+  border: 2px solid var(--app-bg);
   border-radius: 50%;
   font-size: 11px;
   line-height: 1;
@@ -582,14 +618,6 @@ h1.home-title {
   z-index: 10;
   box-shadow: 0 1px 4px rgba(0,0,0,0.2);
 }
-.photo-add-hint {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  color: rgba(0,0,0,0.25);
-  padding: 0 20px 8px;
-  letter-spacing: 0.06em;
-  flex-shrink: 0;
-}
 
 /* ══════════════════════════════════
    TOAST
@@ -597,7 +625,7 @@ h1.home-title {
 .toast {
   position: absolute; bottom: 60px; left: 50%;
   transform: translateX(-50%) translateY(20px);
-  background: var(--ink-black); color: #fdfaf0;
+  background: var(--ink-black); color: var(--app-bg);
   font-family: var(--font-stamp); font-size: 0.9rem;
   padding: 10px 22px;
   opacity: 0; pointer-events: none;
@@ -614,13 +642,13 @@ h1.home-title {
    LIST PAGE
 ══════════════════════════════════ */
 #list {
-  background: #fdfaf0;
+  background: var(--app-bg);
 }
 #list .scroll-container {
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 64px 24px 120px;
+  padding: calc(env(safe-area-inset-top, 0px) + 24px) 24px 120px;
   -webkit-overflow-scrolling: touch;
 }
 #list .scroll-container::-webkit-scrollbar { display: none; }
@@ -671,6 +699,8 @@ h1.home-title {
   display: flex;
   flex-direction: column;
 }
+
+/* FIX #3: Card meta — ensure delete button doesn't overlap time */
 .entry-card-meta {
   opacity: 0.55;
   margin-bottom: 8px;
@@ -678,7 +708,10 @@ h1.home-title {
   font-size: 11px;
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  padding-right: 32px; /* make room for delete button */
 }
+
 .entry-card-doc {
   background: white;
   color: black;
@@ -736,11 +769,32 @@ h1.home-title {
   line-height: 2.2;
 }
 
-/* List bottom bar */
+/* FIX #3: Card delete button repositioned */
+.card-delete-btn {
+  position: absolute;
+  top: 10px; right: 10px;
+  width: 28px; height: 28px;
+  background: rgba(255,255,255,0.12);
+  border: 1.5px solid rgba(255,255,255,0.22);
+  border-radius: 8px;
+  color: rgba(255,255,255,0.55);
+  font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: background 0.15s, color 0.15s;
+  padding: 0;
+  line-height: 1;
+}
+.card-delete-btn:active {
+  background: rgba(139,0,0,0.7);
+  color: #fff;
+  border-color: transparent;
+}
+
 .list-bar {
   position: absolute;
   bottom: 0; left: 0; right: 0;
-  height: 104px;
   background: rgba(253,250,240,0.88);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -748,7 +802,7 @@ h1.home-title {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px 22px;
+  padding: 16px 24px calc(env(safe-area-inset-bottom, 0px) + 16px);
   z-index: 20;
 }
 .list-bar-left { display: flex; flex-direction: column; gap: 2px; }
@@ -788,11 +842,36 @@ h1.home-title {
 }
 .list-write-btn:active { transform: scale(0.96); }
 
+.list-trash-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(0,0,0,0.3);
+  padding: 8px;
+  transition: color 0.15s;
+  position: relative;
+}
+.list-trash-btn:active { color: var(--accent-red); }
+.trash-badge {
+  position: absolute;
+  top: 2px; right: 2px;
+  background: var(--accent-red);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  min-width: 14px; height: 14px;
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 3px;
+  line-height: 1;
+}
+.trash-badge.hidden { display: none; }
+
 /* ══════════════════════════════════
    DETAIL PAGE
 ══════════════════════════════════ */
 #detail {
-  background: #fdfaf0;
+  background: var(--app-bg);
 }
 #detail .scroll-container {
   height: 100%;
@@ -807,11 +886,11 @@ h1.home-title {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 48px 20px 16px;
+  padding: calc(env(safe-area-inset-top, 0px) + 12px) 20px 16px;
   border-bottom: 2px solid rgba(139,0,0,0.12);
   flex-shrink: 0;
   position: sticky; top: 0;
-  background: #fdfaf0;
+  background: var(--app-bg);
   z-index: 5;
 }
 .detail-back-btn {
@@ -836,9 +915,7 @@ h1.home-title {
   text-align: right;
   line-height: 1.4;
 }
-.detail-content {
-  padding: 20px 20px 0;
-}
+.detail-content { padding: 20px 20px 0; }
 .detail-title {
   font-family: var(--font-display);
   font-size: 2rem;
@@ -882,103 +959,37 @@ h1.home-title {
   aspect-ratio: 16/9;
 }
 
-/* ══════════════════════════════════
-   CRT click hint
-.crt-click-hint {
-  position: absolute;
-  bottom: 10px; right: 12px;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  color: rgba(255,255,255,0.35);
-  letter-spacing: 0.06em;
-  pointer-events: none;
-  z-index: 3;
-}
-
-/* ══════════════════════════════════
-   ANIMATIONS
-══════════════════════════════════ */
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-@keyframes stampIn {
-  0%   { transform: scale(1.4) rotate(-2deg); opacity: 0; }
-  60%  { transform: scale(0.97) rotate(0.5deg); opacity: 1; }
-  100% { transform: scale(1) rotate(0deg); opacity: 1; }
-}
-.page.stamp-enter { animation: stampIn 0.45s cubic-bezier(0.22,1,0.36,1) forwards; }
-
-/* ══════════════════════════════════
-   USERNAME ROW (home)
-══════════════════════════════════ */
-.username-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-  margin-bottom: 8px;
-  padding: 0 8px;
-  flex-shrink: 0;
-  max-width: 100%;
-}
-/*
-  CSS Grid overlay trick:
-  sizer-wrap is an inline-grid; both the ::after pseudo-element (invisible,
-  sized by data-value) and the real input share grid-area 1/1.
-  The cell grows to fit the pseudo-element's content → the input fills it.
-  No JS measuring of offsetWidth needed — just set data-value.
-*/
-.username-sizer-wrap {
-  display: inline-grid;
-  align-items: center;
-  max-width: calc(100% - 52px);
-}
-.username-sizer-wrap::after {
-  content: attr(data-value) " "; /* trailing space prevents collapse */
-  grid-area: 1 / 1;
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  letter-spacing: normal;
-  white-space: pre-wrap;
-  visibility: hidden;
-  pointer-events: none;
-  min-width: 80px;
-  padding: 4px 8px;
-  line-height: 1.2;
-  word-break: break-all;
-}
-.username-input {
-  grid-area: 1 / 1;       /* same cell — expands with the ::after */
+.inline-photo {
+  display: block;
   width: 100%;
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  color: var(--accent-red);
+  max-width: 100%;
+  border-radius: 6px;
+  margin: 10px 0;
+  object-fit: cover;
+  border: 1px solid rgba(139,0,0,0.12);
+}
+
+.detail-delete-btn {
+  font-family: var(--font-stamp);
+  font-size: 0.9rem;
+  color: rgba(139,0,0,0.6);
   background: transparent;
-  border: none;
-  border-bottom: 2px dashed rgba(139,0,0,0.35);
-  outline: none;
-  text-align: center;
-  padding: 4px 8px;
-  line-height: 1.2;
-  transition: border-color 0.2s;
-  -webkit-appearance: none;
-  min-width: 80px;
+  border: 2px solid rgba(139,0,0,0.3);
+  padding: 6px 12px;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transform: rotate(0.5deg);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
-.username-input::placeholder {
-  color: rgba(139,0,0,0.22);
-}
-.username-input:focus {
-  border-bottom-color: rgba(139,0,0,0.75);
-}
-.username-apostrophe {
-  font-family: var(--font-display);
-  font-size: 2.5rem;
-  color: var(--accent-red);
-  line-height: 1;
-  white-space: nowrap;
-  margin-left: 4px;
+.detail-delete-btn:active {
+  background: var(--accent-red);
+  color: #fff;
+  border-color: var(--accent-red);
 }
 
 /* ══════════════════════════════════
-   COMMENT SECTION (detail)
+   COMMENT SECTION
 ══════════════════════════════════ */
 .comment-section {
   border-top: 1px solid rgba(139,0,0,0.12);
@@ -1048,18 +1059,6 @@ h1.home-title {
   letter-spacing: 0.06em;
 }
 
-/* Inline photo in detail body */
-.inline-photo {
-  display: block;
-  width: 100%;
-  max-width: 100%;
-  border-radius: 6px;
-  margin: 10px 0;
-  object-fit: cover;
-  border: 1px solid rgba(139,0,0,0.12);
-}
-
-/* Comment input bar */
 .comment-bar {
   position: absolute;
   bottom: 0; left: 0; right: 0;
@@ -1067,7 +1066,7 @@ h1.home-title {
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-top: 1px solid rgba(139,0,0,0.1);
-  padding: 12px 16px 28px;
+  padding: 12px 16px calc(env(safe-area-inset-bottom, 0px) + 12px);
   z-index: 20;
   display: flex;
   gap: 8px;
@@ -1121,87 +1120,76 @@ h1.home-title {
 .comment-del-btn:active { color: var(--accent-red); }
 
 /* ══════════════════════════════════
-   CARD DELETE BUTTON
+   USERNAME ROW
 ══════════════════════════════════ */
-.card-delete-btn {
-  position: absolute;
-  top: 10px; right: 10px;
-  width: 28px; height: 28px;
-  background: rgba(255,255,255,0.12);
-  border: 1.5px solid rgba(255,255,255,0.22);
-  border-radius: 8px;
-  color: rgba(255,255,255,0.55);
-  font-size: 14px;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-  z-index: 10;
-  transition: background 0.15s, color 0.15s;
-  padding: 0;
-  line-height: 1;
+.username-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 8px;
+  padding: 0 8px;
+  flex-shrink: 0;
+  max-width: 100%;
 }
-.card-delete-btn:active {
-  background: rgba(139,0,0,0.7);
-  color: #fff;
-  border-color: transparent;
+.username-sizer-wrap {
+  display: inline-grid;
+  align-items: center;
+  max-width: calc(100% - 52px);
 }
-
-/* detail delete btn */
-.detail-delete-btn {
-  font-family: var(--font-stamp);
-  font-size: 0.9rem;
-  color: rgba(139,0,0,0.6);
+.username-sizer-wrap::after {
+  content: attr(data-value) " ";
+  grid-area: 1 / 1;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  letter-spacing: normal;
+  white-space: pre-wrap;
+  visibility: hidden;
+  pointer-events: none;
+  min-width: 80px;
+  padding: 4px 8px;
+  line-height: 1.2;
+  word-break: break-all;
+}
+.username-input {
+  grid-area: 1 / 1;
+  width: 100%;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: var(--accent-red);
   background: transparent;
-  border: 2px solid rgba(139,0,0,0.3);
-  padding: 6px 12px;
-  cursor: pointer;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  transform: rotate(0.5deg);
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-}
-.detail-delete-btn:active {
-  background: var(--accent-red);
-  color: #fff;
-  border-color: var(--accent-red);
-}
-
-/* trash icon in list bar */
-.list-trash-btn {
-  background: none;
   border: none;
-  cursor: pointer;
-  color: rgba(0,0,0,0.3);
-  padding: 8px;
-  transition: color 0.15s;
-  position: relative;
+  border-bottom: 2px dashed rgba(139,0,0,0.35);
+  outline: none;
+  text-align: center;
+  padding: 4px 8px;
+  line-height: 1.2;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+  min-width: 80px;
 }
-.list-trash-btn:active { color: var(--accent-red); }
-.trash-badge {
-  position: absolute;
-  top: 2px; right: 2px;
-  background: var(--accent-red);
-  color: #fff;
-  font-family: var(--font-mono);
-  font-size: 9px;
-  min-width: 14px; height: 14px;
-  border-radius: 7px;
-  display: flex; align-items: center; justify-content: center;
-  padding: 0 3px;
+.username-input::placeholder { color: rgba(139,0,0,0.22); }
+.username-input:focus { border-bottom-color: rgba(139,0,0,0.75); }
+.username-apostrophe {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  color: var(--accent-red);
   line-height: 1;
+  white-space: nowrap;
+  margin-left: 4px;
 }
-.trash-badge.hidden { display: none; }
 
 /* ══════════════════════════════════
    TRASH PAGE
 ══════════════════════════════════ */
 #trash {
-  background: #fdfaf0;
+  background: var(--app-bg);
 }
 #trash .scroll-container {
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 64px 24px 120px;
+  padding: calc(env(safe-area-inset-top, 0px) + 24px) 24px 120px;
   -webkit-overflow-scrolling: touch;
 }
 #trash .scroll-container::-webkit-scrollbar { display: none; }
@@ -1297,10 +1285,7 @@ h1.home-title {
   text-transform: uppercase;
   transition: background 0.15s, color 0.15s;
 }
-.trash-restore-btn:active {
-  background: rgba(255,255,255,0.15);
-  color: #fff;
-}
+.trash-restore-btn:active { background: rgba(255,255,255,0.15); color: #fff; }
 .trash-perm-del-btn {
   flex: 1;
   font-family: var(--font-stamp);
@@ -1315,11 +1300,7 @@ h1.home-title {
   text-transform: uppercase;
   transition: background 0.15s, color 0.15s;
 }
-.trash-perm-del-btn:active {
-  background: var(--accent-red);
-  color: #fff;
-  border-color: var(--accent-red);
-}
+.trash-perm-del-btn:active { background: var(--accent-red); color: #fff; border-color: var(--accent-red); }
 
 .trash-empty {
   font-family: var(--font-mono);
@@ -1334,7 +1315,6 @@ h1.home-title {
 .trash-bar {
   position: absolute;
   bottom: 0; left: 0; right: 0;
-  height: 104px;
   background: rgba(253,250,240,0.88);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -1342,7 +1322,7 @@ h1.home-title {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px 22px;
+  padding: 16px 24px calc(env(safe-area-inset-bottom, 0px) + 16px);
   z-index: 20;
 }
 .trash-bar-left { display: flex; flex-direction: column; gap: 2px; }
@@ -1377,53 +1357,57 @@ h1.home-title {
   text-transform: uppercase;
   transition: background 0.15s, color 0.15s;
 }
-.trash-clear-btn:active {
-  background: var(--accent-red);
-  color: #fff;
-  border-color: var(--accent-red);
+.trash-clear-btn:active { background: var(--accent-red); color: #fff; border-color: var(--accent-red); }
+.trash-clear-btn:disabled { opacity: 0.3; cursor: default; }
+
+/* ══════════════════════════════════
+   ANIMATIONS
+══════════════════════════════════ */
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* FIX #5: Swipe indicator — subtle edge hint */
+.swipe-indicator {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  width: 20px;
+  z-index: 999;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(to right, rgba(139,0,0,0.15), transparent);
+  transition: opacity 0.2s;
 }
-.trash-clear-btn:disabled {
-  opacity: 0.3;
-  cursor: default;
+.swipe-indicator.visible {
+  opacity: 1;
 }
 </style>
 </head>
 <body>
 
-<div class="iphone-frame">
+<div class="iphone-frame" id="app-root">
   <div class="notch"></div>
+
+  <!-- Swipe indicator -->
+  <div class="swipe-indicator" id="swipe-indicator"></div>
 
   <!-- ════════ HOME ════════ -->
   <div class="page" id="home">
     <div class="scroll-container">
-
-      <!-- Username row -->
       <div class="username-row">
         <div class="username-sizer-wrap" id="username-sizer-wrap" data-value="username">
-          <input
-            type="text"
-            class="username-input"
-            id="username-input"
-            placeholder="username"
-            maxlength="20"
-            spellcheck="false"
-            autocomplete="off"
-          >
+          <input type="text" class="username-input" id="username-input"
+            placeholder="username" maxlength="20" spellcheck="false" autocomplete="off">
         </div>
         <span class="username-apostrophe">'s</span>
       </div>
 
       <h1 class="home-title">Journal</h1>
 
-      <!-- Hero area -->
       <div class="hero-sticker-area">
-
         <div class="deco-sticker sticker-star-lg"></div>
         <div class="deco-sticker sticker-ball-lg"></div>
         <div class="deco-sticker sticker-badge-lg"></div>
         <div class="sticker-sparkle">✨</div>
 
-        <!-- 3-D Computer -->
         <div class="computer-container">
           <div class="computer-unit">
             <div class="face front">
@@ -1454,7 +1438,6 @@ h1.home-title {
             <div class="face side-right"></div>
             <div class="face top-side"></div>
             <div class="face bottom-side"></div>
-
             <div class="keyboard-assembly">
               <div class="kb-base">
                 <div class="keys-grid">
@@ -1475,7 +1458,7 @@ h1.home-title {
             </div>
           </div>
         </div>
-      </div><!-- /hero -->
+      </div>
 
       <p class="copy">
         The world is a soap bubble, an opera, the absurdity of joy.
@@ -1485,20 +1468,17 @@ h1.home-title {
         <div class="btn-stamp" onclick="goList()">input now</div>
       </div>
 
-      <!-- Entry count -->
       <p style="font-family:var(--font-mono);font-size:14px;color:#aaa;text-align:center;margin-top:10px;letter-spacing:0.08em;flex-shrink:0;">
         <span id="entry-count">0</span> entries saved
       </p>
-
     </div>
-  </div><!-- /home -->
-
+  </div>
 
   <!-- ════════ LIST ════════ -->
   <div class="page slide-up" id="list">
     <div class="scroll-container" id="list-scroll">
       <h1 class="list-title">My<br><em>Journal.</em></h1>
-      <div id="entry-list"><!-- rendered by JS --></div>
+      <div id="entry-list"></div>
     </div>
     <div class="list-bar">
       <div class="list-bar-left">
@@ -1520,13 +1500,11 @@ h1.home-title {
         </button>
       </div>
     </div>
-  </div><!-- /list -->
-
+  </div>
 
   <!-- ════════ EDIT ════════ -->
   <div class="page slide-up" id="edit">
     <div class="scroll-container">
-
       <div class="edit-bar">
         <button class="back-stamp" onclick="editGoList()">← Back</button>
         <span class="edit-date-stamp" id="edit-date"></span>
@@ -1537,20 +1515,19 @@ h1.home-title {
         <input type="text" class="entry-title-input" id="entry-title"
           placeholder="Today's title…" maxlength="60">
         <hr class="stamp-line">
-        <textarea class="entry-body-input" id="entry-body"
-          placeholder="Write it down. Thoughts, feelings, sparks of ideas — just make it real."></textarea>
+        <!-- FIX #2: Use contenteditable div for rich editing with inline images -->
+        <div class="rich-editor" id="entry-body" contenteditable="true"
+          data-placeholder="Write it down. Thoughts, feelings, sparks of ideas — just make it real."></div>
       </div>
 
-      <!-- Photo strip (inline in body area) -->
+      <!-- Photo strip thumbnails -->
       <div class="photo-strip" id="photo-strip"></div>
 
       <!-- Hidden file input -->
       <input type="file" id="photo-input" accept="image/*" multiple
         style="display:none" onchange="handlePhotos(this)">
-
     </div>
 
-    <!-- Footer fixed outside scroll, won't be pushed by keyboard -->
     <div class="edit-footer">
       <span class="word-stamp" id="word-count">0 CHARS</span>
       <div class="foot-icons">
@@ -1568,8 +1545,7 @@ h1.home-title {
         </button>
       </div>
     </div>
-
-  </div><!-- /edit -->
+  </div>
 
   <!-- ════════ DETAIL ════════ -->
   <div class="page slide-up" id="detail">
@@ -1586,7 +1562,6 @@ h1.home-title {
       </div>
       <div class="detail-photo-grid" id="detail-photos"></div>
 
-      <!-- Comments -->
       <div class="comment-section">
         <h2 class="comment-section-heading">Comments</h2>
         <div class="comment-list" id="comment-list">
@@ -1595,26 +1570,19 @@ h1.home-title {
       </div>
     </div>
 
-    <!-- Comment input bar -->
     <div class="comment-bar">
-      <input
-        type="text"
-        class="comment-input"
-        id="comment-input"
-        placeholder="Write a comment…"
-        maxlength="200"
-        autocomplete="off"
-      >
+      <input type="text" class="comment-input" id="comment-input"
+        placeholder="Write a comment…" maxlength="200" autocomplete="off">
       <button class="comment-post-btn" onclick="postComment()">Post</button>
     </div>
-  </div><!-- /detail -->
+  </div>
 
   <!-- ════════ TRASH ════════ -->
   <div class="page slide-up" id="trash">
     <div class="scroll-container" id="trash-scroll">
       <h1 class="trash-title">回收<br><em>站。</em></h1>
       <p class="trash-hint">移入回收站的日记 · 在此处永久删除</p>
-      <div id="trash-list"><!-- rendered by JS --></div>
+      <div id="trash-list"></div>
     </div>
     <div class="trash-bar">
       <div class="trash-bar-left">
@@ -1623,11 +1591,10 @@ h1.home-title {
       </div>
       <button class="trash-clear-btn" id="trash-clear-btn" onclick="clearAllTrash()">清空回收站</button>
     </div>
-  </div><!-- /trash -->
+  </div>
 
   <div class="toast" id="toast">Saved ✓</div>
-
-</div><!-- /iphone-frame -->
+</div>
 
 <script>
 /* ══════════════════════════════════
@@ -1639,12 +1606,7 @@ const MONTHS_UP  = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT',
 function nowObj() { return new Date(); }
 
 function fmt(d) {
-  // "Mar 17, 2026  14:35"
   return `${MONTHS[d.getMonth()]} ${String(d.getDate()).padStart(2,'0')}, ${d.getFullYear()}  ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-}
-function fmtUpper(d) {
-  // "MAR 17, 2026  14:35"
-  return `${MONTHS_UP[d.getMonth()]} ${String(d.getDate()).padStart(2,'0')}, ${d.getFullYear()}  ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
 }
 function fmtCardDate(isoStr) {
   const d = new Date(isoStr);
@@ -1666,11 +1628,9 @@ function fmtSize(body) {
   return ((body||'').length/1024).toFixed(1)+'KB';
 }
 
-/* init CRT date */
 document.getElementById('crt-date').textContent =
   `${MONTHS[nowObj().getMonth()]} ${nowObj().getDate()}, ${nowObj().getFullYear()}`;
 
-/* ── Entry count (home) ── */
 function refreshHomeCount() {
   const all = JSON.parse(localStorage.getItem('journal_v2')||'[]');
   document.getElementById('entry-count').textContent = all.length;
@@ -1687,7 +1647,6 @@ function syncUsernameSizer() {
   const input = document.getElementById('username-input');
   const wrap  = document.getElementById('username-sizer-wrap');
   if (!input || !wrap) return;
-  /* CSS grid ::after uses data-value to size the cell */
   wrap.dataset.value = input.value || input.placeholder;
 }
 function initUsername() {
@@ -1705,26 +1664,17 @@ function initUsername() {
 /* ══════════════════════════════════
    COMMENTS
 ══════════════════════════════════ */
-let currentEntryKey = null;   // ISO date string of open entry
+let currentEntryKey = null;
 
-function commentStorageKey(entryDate) {
-  return 'journal_comments_' + entryDate;
-}
-
-function getComments(entryDate) {
-  return JSON.parse(localStorage.getItem(commentStorageKey(entryDate)) || '[]');
-}
-
-function saveComments(entryDate, arr) {
-  localStorage.setItem(commentStorageKey(entryDate), JSON.stringify(arr));
-}
+function commentStorageKey(entryDate) { return 'journal_comments_' + entryDate; }
+function getComments(entryDate) { return JSON.parse(localStorage.getItem(commentStorageKey(entryDate)) || '[]'); }
+function saveComments(entryDate, arr) { localStorage.setItem(commentStorageKey(entryDate), JSON.stringify(arr)); }
 
 function fmtCommentTime(isoStr) {
   const d = new Date(isoStr);
-  const h = String(d.getHours()).padStart(2,'0');
   const m = String(d.getMinutes()).padStart(2,'0');
-  const ampm = d.getHours() < 12 ? 'AM' : 'PM';
   const h12 = d.getHours() % 12 || 12;
+  const ampm = d.getHours() < 12 ? 'AM' : 'PM';
   return `${String(h12).padStart(2,'0')}:${m} ${ampm}`;
 }
 
@@ -1751,11 +1701,7 @@ function renderComments(entryDate) {
 }
 
 function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;');
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 function postComment() {
@@ -1769,18 +1715,9 @@ function postComment() {
   saveComments(currentEntryKey, comments);
   input.value = '';
   renderComments(currentEntryKey);
-  // scroll to bottom of comment list
   const sc = document.querySelector('#detail .scroll-container');
   if (sc) setTimeout(()=>{ sc.scrollTop = sc.scrollHeight; }, 60);
 }
-
-// submit on Enter key
-document.addEventListener('DOMContentLoaded', ()=>{
-  initUsername();
-  syncUsernameSizer();
-  const ci = document.getElementById('comment-input');
-  if (ci) ci.addEventListener('keydown', e => { if(e.key==='Enter'){ e.preventDefault(); postComment(); } });
-});
 
 function deleteComment(i) {
   if (!currentEntryKey) return;
@@ -1791,15 +1728,12 @@ function deleteComment(i) {
 }
 
 /* ══════════════════════════════════
-   PREVENT KEYBOARD PUSH ON EDIT PAGE
+   KEYBOARD FIX
 ══════════════════════════════════ */
-// iOS Safari: when keyboard opens, it resizes the visual viewport.
-// We keep the #edit page's position fixed so it doesn't shift.
 if (window.visualViewport) {
   window.visualViewport.addEventListener('resize', () => {
     const editPage = document.getElementById('edit');
     if (!editPage.classList.contains('slide-up') && !editPage.classList.contains('slide-out')) {
-      // Keep the page anchored at top
       editPage.style.top = window.visualViewport.offsetTop + 'px';
     }
   });
@@ -1820,12 +1754,12 @@ const phrases = [
   "Your thoughts deserve a page.",
   "今天又是新的一天……",
 ];
-let pi=0, ci=0;
+let pi=0, ci2=0;
 const tw = document.getElementById('typewriter');
 function type() {
   const t = phrases[pi];
-  if (ci < t.length) {
-    tw.textContent += t[ci++];
+  if (ci2 < t.length) {
+    tw.textContent += t[ci2++];
     setTimeout(type, 85+Math.random()*55);
   } else {
     setTimeout(()=>{
@@ -1834,7 +1768,7 @@ function type() {
           tw.textContent = tw.textContent.slice(0,-1);
           setTimeout(erase, 40);
         } else {
-          ci=0; pi=(pi+1)%phrases.length;
+          ci2=0; pi=(pi+1)%phrases.length;
           setTimeout(type, 500);
         }
       }
@@ -1847,24 +1781,28 @@ window.addEventListener('load', ()=>{ refreshTrashBadge(); });
 
 /* ══════════════════════════════════
    PAGE NAVIGATION
-   home(1) → list(2) → edit(3)
-                     → detail(4)
+   FIX #4: Pure transition-based — no stamp-enter animation
 ══════════════════════════════════ */
+
+// Navigation stack to track page history
+const navStack = ['home'];
+
 function showPage(id) {
-  // bring target page in
   const el = document.getElementById(id);
+  // Force a layout with the slide-up state, then remove it
+  // This ensures the transition plays FROM bottom TO center
+  el.offsetHeight; // force reflow
   el.classList.remove('slide-up', 'slide-out');
-  el.classList.add('stamp-enter');
 }
+
 function hidePage(id, dir) {
-  // dir: 'up' = slide down off screen, 'out' = slide up off screen
   const el = document.getElementById(id);
-  el.classList.remove('stamp-enter');
-  if (dir==='out') {
+  if (dir === 'out') {
     el.classList.add('slide-out');
   } else {
     el.classList.add('slide-up');
   }
+  el.style.top = ''; // reset any keyboard offset
 }
 
 /* Home → List */
@@ -1872,21 +1810,24 @@ function goList() {
   hidePage('home','out');
   renderList();
   showPage('list');
+  navStack.push('list');
   refreshHomeCount();
 }
 
 /* List → Home */
 function listGoHome() {
   hidePage('list','up');
-  // restore home
   const home = document.getElementById('home');
-  home.classList.remove('slide-out','slide-up','stamp-enter');
+  home.classList.remove('slide-out','slide-up');
+  navStack.length = 0;
+  navStack.push('home');
 }
 
 /* List → Edit (new entry) */
 function listGoEdit() {
   resetEditForm();
   showPage('edit');
+  navStack.push('edit');
 }
 
 /* Edit → List */
@@ -1894,6 +1835,7 @@ function editGoList() {
   hidePage('edit','up');
   resetEditForm();
   renderList();
+  if (navStack[navStack.length-1] === 'edit') navStack.pop();
 }
 
 /* List → Detail */
@@ -1908,10 +1850,8 @@ function openEntry(i) {
   document.getElementById('detail-title').textContent = entry.title || '(No title)';
   document.getElementById('detail-ts').innerHTML = fmtDetailTs(entry.date);
 
-  // Render body with inline photos
   const bodyEl = document.getElementById('detail-body');
   if (entry.photos && entry.photos.length) {
-    // Replace [photo:N] markers with actual <img> tags
     let html = escapeHtml(entry.body || '').replace(/\n/g, '<br>');
     entry.photos.forEach((src, idx) => {
       html = html.replace(
@@ -1924,18 +1864,15 @@ function openEntry(i) {
     bodyEl.innerHTML = escapeHtml(entry.body || '').replace(/\n/g, '<br>');
   }
 
-  // photos grid (legacy / extra display)
   const grid = document.getElementById('detail-photos');
   grid.innerHTML = '';
 
-  // comments
   renderComments(entry.date);
-
-  // clear comment input
-  const ci = document.getElementById('comment-input');
-  if (ci) ci.value = '';
+  const cinput = document.getElementById('comment-input');
+  if (cinput) cinput.value = '';
 
   showPage('detail');
+  navStack.push('detail');
 }
 
 /* Detail → List */
@@ -1943,64 +1880,179 @@ function detailGoList() {
   hidePage('detail','up');
   currentEntryIndex = -1;
   currentEntryKey = null;
+  if (navStack[navStack.length-1] === 'detail') navStack.pop();
 }
 
-/* Delete current entry from detail view */
+/* Delete entry from detail */
 function deleteCurrentEntry() {
   if (currentEntryIndex < 0) return;
   moveToTrash(currentEntryIndex);
   hidePage('detail','up');
   currentEntryIndex = -1;
   renderList();
+  if (navStack[navStack.length-1] === 'detail') navStack.pop();
 }
 
 /* List → Trash */
 function goTrash() {
   renderTrash();
   showPage('trash');
+  navStack.push('trash');
 }
 
 /* Trash → List */
 function trashGoList() {
   hidePage('trash','up');
   renderList();
+  if (navStack[navStack.length-1] === 'trash') navStack.pop();
+}
+
+/* ══════════════════════════════════
+   FIX #5: SWIPE BACK GESTURE
+══════════════════════════════════ */
+(function initSwipeBack() {
+  const appRoot = document.getElementById('app-root');
+  const indicator = document.getElementById('swipe-indicator');
+  let startX = 0, startY = 0, tracking = false, swiped = false;
+  const THRESHOLD = 80;
+  const EDGE_ZONE = 35; // px from left edge to start tracking
+
+  appRoot.addEventListener('touchstart', (e) => {
+    const touch = e.touches[0];
+    if (touch.clientX > EDGE_ZONE) return; // only start from left edge
+    if (navStack.length <= 1) return; // nothing to go back to
+    startX = touch.clientX;
+    startY = touch.clientY;
+    tracking = true;
+    swiped = false;
+  }, { passive: true });
+
+  appRoot.addEventListener('touchmove', (e) => {
+    if (!tracking) return;
+    const touch = e.touches[0];
+    const dx = touch.clientX - startX;
+    const dy = Math.abs(touch.clientY - startY);
+
+    // If vertical scroll is dominant, cancel
+    if (dy > dx && dx < 30) {
+      tracking = false;
+      indicator.classList.remove('visible');
+      return;
+    }
+
+    if (dx > 20) {
+      indicator.classList.add('visible');
+      indicator.style.opacity = Math.min(dx / THRESHOLD, 1) * 0.6;
+      indicator.style.width = Math.min(dx * 0.4, 30) + 'px';
+    }
+
+    if (dx >= THRESHOLD && !swiped) {
+      swiped = true;
+      tracking = false;
+      indicator.classList.remove('visible');
+      performSwipeBack();
+    }
+  }, { passive: true });
+
+  appRoot.addEventListener('touchend', () => {
+    tracking = false;
+    indicator.classList.remove('visible');
+    indicator.style.opacity = '';
+    indicator.style.width = '';
+  }, { passive: true });
+
+  appRoot.addEventListener('touchcancel', () => {
+    tracking = false;
+    indicator.classList.remove('visible');
+    indicator.style.opacity = '';
+    indicator.style.width = '';
+  }, { passive: true });
+})();
+
+function performSwipeBack() {
+  if (navStack.length <= 1) return;
+  const current = navStack[navStack.length - 1];
+
+  switch (current) {
+    case 'list':
+      listGoHome();
+      break;
+    case 'edit':
+      editGoList();
+      break;
+    case 'detail':
+      detailGoList();
+      break;
+    case 'trash':
+      trashGoList();
+      break;
+  }
 }
 
 /* ══════════════════════════════════
    EDIT FORM
 ══════════════════════════════════ */
 function resetEditForm() {
-  // refresh timestamp in edit bar
   const d = nowObj();
   document.getElementById('edit-date').textContent = fmt(d);
-
   document.getElementById('entry-title').value = '';
-  document.getElementById('entry-body').value  = '';
+  const editor = document.getElementById('entry-body');
+  editor.innerHTML = '';
   document.getElementById('word-count').textContent = '0 CHARS';
   pendingPhotos = [];
   document.getElementById('photo-strip').innerHTML = '';
   document.getElementById('photo-input').value = '';
 }
 
-/* init edit-date once */
 document.getElementById('edit-date').textContent = fmt(nowObj());
 
-/* ── Photos ── */
+/* ══════════════════════════════════
+   FIX #2: PHOTO HANDLING — Insert inline into contenteditable
+══════════════════════════════════ */
 let pendingPhotos = [];
 
 function handlePhotos(input) {
-  [...input.files].forEach(file=>{
+  const files = [...input.files];
+  files.forEach(file => {
     const r = new FileReader();
     r.onload = e => {
       const src = e.target.result;
       pendingPhotos.push(src);
-      // Insert photo marker at cursor position in textarea
-      const ta = document.getElementById('entry-body');
-      const marker = `\n[photo:${pendingPhotos.length - 1}]\n`;
-      const pos = ta.selectionStart;
-      ta.value = ta.value.slice(0, pos) + marker + ta.value.slice(pos);
-      ta.selectionStart = ta.selectionEnd = pos + marker.length;
+
+      // Insert image directly into contenteditable editor
+      const editor = document.getElementById('entry-body');
+      editor.focus();
+
+      // Create image element
+      const img = document.createElement('img');
+      img.src = src;
+      img.dataset.photoIndex = pendingPhotos.length - 1;
+      img.style.display = 'block';
+      img.style.maxWidth = '100%';
+      img.style.borderRadius = '6px';
+      img.style.margin = '8px 0';
+      img.style.border = '1px solid rgba(139,0,0,0.12)';
+
+      // Insert at cursor or append
+      const sel = window.getSelection();
+      if (sel.rangeCount > 0 && editor.contains(sel.anchorNode)) {
+        const range = sel.getRangeAt(0);
+        range.collapse(false);
+        range.insertNode(document.createElement('br'));
+        range.collapse(false);
+        range.insertNode(img);
+        range.collapse(false);
+        range.insertNode(document.createElement('br'));
+        // Move cursor after
+        sel.collapseToEnd();
+      } else {
+        editor.appendChild(document.createElement('br'));
+        editor.appendChild(img);
+        editor.appendChild(document.createElement('br'));
+      }
+
       renderPhotoStrip();
+      updateCharCount();
     };
     r.readAsDataURL(file);
   });
@@ -2010,47 +2062,104 @@ function handlePhotos(input) {
 function renderPhotoStrip() {
   const strip = document.getElementById('photo-strip');
   strip.innerHTML = '';
-  pendingPhotos.forEach((src,i)=>{
+  pendingPhotos.forEach((src, i) => {
     const wrap = document.createElement('div');
     wrap.className = 'photo-thumb-wrap';
     const img = document.createElement('img');
     img.className = 'photo-thumb'; img.src = src;
     const del = document.createElement('button');
     del.className = 'photo-del'; del.textContent = '×';
-    del.onclick = ()=>{
+    del.onclick = () => {
+      // Remove from pendingPhotos
       pendingPhotos.splice(i, 1);
-      // Remove the marker from textarea
-      const ta = document.getElementById('entry-body');
-      ta.value = ta.value.replace(new RegExp(`\\n?\\[photo:${i}\\]\\n?`,'g'), '\n');
-      // Re-index remaining markers
-      for (let j = i; j < pendingPhotos.length; j++) {
-        ta.value = ta.value.replace(new RegExp(`\\[photo:${j+1}\\]`,'g'), `[photo:${j}]`);
-      }
+      // Remove the corresponding image from the editor
+      const editor = document.getElementById('entry-body');
+      const imgs = editor.querySelectorAll('img');
+      imgs.forEach(edImg => {
+        if (edImg.src === src) {
+          // Remove surrounding br tags if possible
+          const prev = edImg.previousSibling;
+          const next = edImg.nextSibling;
+          if (next && next.nodeName === 'BR') next.remove();
+          if (prev && prev.nodeName === 'BR') prev.remove();
+          edImg.remove();
+        }
+      });
+      // Re-index dataset
+      const remainingImgs = editor.querySelectorAll('img');
+      remainingImgs.forEach((im, idx) => { im.dataset.photoIndex = idx; });
       renderPhotoStrip();
+      updateCharCount();
     };
     wrap.appendChild(img); wrap.appendChild(del);
     strip.appendChild(wrap);
   });
 }
 
-/* ── Char count ── */
-document.getElementById('entry-body').addEventListener('input', function(){
-  document.getElementById('word-count').textContent =
-    this.value.replace(/\s/g,'').length + ' CHARS';
-});
+/* Char count for contenteditable */
+function updateCharCount() {
+  const editor = document.getElementById('entry-body');
+  const text = editor.innerText || '';
+  const count = text.replace(/\s/g,'').length;
+  document.getElementById('word-count').textContent = count + ' CHARS';
+}
 
-/* ── Save ── */
+document.getElementById('entry-body').addEventListener('input', updateCharCount);
+
+/* ══════════════════════════════════
+   FIX #2: SAVE — Extract text + photo markers from contenteditable
+══════════════════════════════════ */
 function saveEntry() {
   const title = document.getElementById('entry-title').value.trim();
-  const body  = document.getElementById('entry-body').value.trim();
-  if (!title && !body && pendingPhotos.length===0) {
+  const editor = document.getElementById('entry-body');
+
+  // Walk the editor DOM and convert to text with [photo:N] markers
+  let bodyText = '';
+  const photoSrcs = [];
+
+  function walkNodes(node) {
+    for (const child of node.childNodes) {
+      if (child.nodeType === Node.TEXT_NODE) {
+        bodyText += child.textContent;
+      } else if (child.nodeName === 'BR') {
+        bodyText += '\n';
+      } else if (child.nodeName === 'IMG') {
+        const src = child.src;
+        let idx = photoSrcs.indexOf(src);
+        if (idx === -1) {
+          idx = photoSrcs.length;
+          photoSrcs.push(src);
+        }
+        bodyText += `[photo:${idx}]`;
+      } else if (child.nodeName === 'DIV' || child.nodeName === 'P') {
+        // Block elements get newlines
+        if (bodyText.length > 0 && !bodyText.endsWith('\n')) bodyText += '\n';
+        walkNodes(child);
+        if (!bodyText.endsWith('\n')) bodyText += '\n';
+      } else {
+        walkNodes(child);
+      }
+    }
+  }
+  walkNodes(editor);
+
+  bodyText = bodyText.trim();
+
+  if (!title && !bodyText && photoSrcs.length === 0) {
     alert('Write something first ✏️'); return;
   }
+
   const all = JSON.parse(localStorage.getItem('journal_v2')||'[]');
-  all.unshift({ date: new Date().toISOString(), title, body, photos:[...pendingPhotos] });
+  all.unshift({
+    date: new Date().toISOString(),
+    title,
+    body: bodyText,
+    photos: photoSrcs
+  });
   localStorage.setItem('journal_v2', JSON.stringify(all));
 
   const toast = document.getElementById('toast');
+  toast.textContent = 'Saved ✓';
   toast.classList.add('show');
   setTimeout(()=>{
     toast.classList.remove('show');
@@ -2061,12 +2170,8 @@ function saveEntry() {
 /* ══════════════════════════════════
    TRASH FUNCTIONS
 ══════════════════════════════════ */
-function getTrash() {
-  return JSON.parse(localStorage.getItem('journal_trash')||'[]');
-}
-function saveTrash(arr) {
-  localStorage.setItem('journal_trash', JSON.stringify(arr));
-}
+function getTrash() { return JSON.parse(localStorage.getItem('journal_trash')||'[]'); }
+function saveTrash(arr) { localStorage.setItem('journal_trash', JSON.stringify(arr)); }
 
 function moveToTrash(i) {
   const all = JSON.parse(localStorage.getItem('journal_v2')||'[]');
@@ -2080,7 +2185,6 @@ function moveToTrash(i) {
   refreshHomeCount();
   refreshTrashBadge();
 
-  // show toast
   const toast = document.getElementById('toast');
   toast.textContent = '已移入回收站';
   toast.classList.add('show');
@@ -2158,7 +2262,7 @@ function renderTrash() {
     card.className = 'trash-card';
 
     const preview = entry.body
-      ? entry.body.slice(0, 100)
+      ? entry.body.replace(/\[photo:\d+\]/g, '').slice(0, 100)
       : (entry.photos && entry.photos.length ? '[Photo entry]' : '(empty)');
 
     card.innerHTML = `
@@ -2169,7 +2273,7 @@ function renderTrash() {
         </div>
         <div class="trash-card-doc">
           <div class="trash-card-filename">${slugTitle(entry.title)}</div>
-          <div class="trash-card-preview">${preview}</div>
+          <div class="trash-card-preview">${escapeHtml(preview)}</div>
         </div>
         <div class="trash-card-actions">
           <button class="trash-restore-btn" onclick="restoreFromTrash(${i})">↩ 还原</button>
@@ -2209,7 +2313,7 @@ function renderList() {
     card.onclick = ()=> openEntry(i);
 
     const preview = entry.body
-      ? entry.body.slice(0,160)
+      ? entry.body.replace(/\[photo:\d+\]/g, '').slice(0,160)
       : (entry.photos&&entry.photos.length ? '[Photo entry]' : '(empty)');
 
     let photosHTML = '';
@@ -2236,12 +2340,11 @@ function renderList() {
             <span>${slugTitle(entry.title)}</span>
             <span style="opacity:.45;font-size:8px">${fmtSize(entry.body)}</span>
           </div>
-          <div class="entry-card-preview">${preview}</div>
+          <div class="entry-card-preview">${escapeHtml(preview)}</div>
           ${photosHTML}
         </div>
       </div>`;
 
-    // wire up delete button — stop propagation so card click doesn't fire
     card.querySelector('.card-delete-btn').addEventListener('click', e => {
       e.stopPropagation();
       moveToTrash(i);
@@ -2251,6 +2354,18 @@ function renderList() {
     container.appendChild(card);
   });
 }
+
+/* ══════════════════════════════════
+   INIT
+══════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  initUsername();
+  syncUsernameSizer();
+  const cinput = document.getElementById('comment-input');
+  if (cinput) cinput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); postComment(); }
+  });
+});
 </script>
 </body>
 </html>
